@@ -5,6 +5,7 @@ describe Consistent::Ring do
                  { node: "theverylast", weight: 100, status: :alive },
                  { node: "dead", weight: 100, status: :dead } ] }
   let(:alive_nodes){ nodes.select{ |n| n[:status] == :alive }}
+  let(:ring){ Consistent::Ring.new nodes }
 
   describe "new" do
     it "should create empty ring" do
@@ -21,8 +22,6 @@ describe Consistent::Ring do
   end
 
   describe "add" do
-    let(:ring){ Consistent::Ring.new }
-
     it "should not add nodes before refresh" do
       ring.add nodes[0]
       ring.add nodes[1]
@@ -39,8 +38,6 @@ describe Consistent::Ring do
   end
 
   describe "get" do
-    let(:ring){ Consistent::Ring.new nodes }
-
     it "should raise an error without token" do
       proc{ ring.get(nil) }.must_raise RuntimeError
     end
@@ -66,5 +63,9 @@ describe Consistent::Ring do
     it "should return only alive" do
       ring.get("", :all).sort.must_equal alive_nodes.map{ |n| n[:node] }.sort
     end
+  end
+
+  describe "update" do
+    
   end
 end
