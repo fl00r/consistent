@@ -22,10 +22,10 @@ static void md5_points_hash(__unused__ void *_ctx, const char *serv, size_t len,
 // Ruby methods
 VALUE Consistent = Qnil;
 
-VALUE method_add(VALUE self, VALUE items);
 VALUE method_get(VALUE self, VALUE token, VALUE cnt, VALUE all);
-// VALUE method_refresh(VALUE self);
-
+VALUE method_add(VALUE self, VALUE items);
+VALUE method_update(VALUE self, VALUE items);
+// VALUE method_replace(VALUE self, VALUE items);
 
 CH_config_t config = {
     .use_handle = CH_DONOT_USE_HANDLE,
@@ -50,28 +50,10 @@ void Init_consistent_ring() {
 
   rb_define_alloc_func(Consistent, wrap_Ring);
   // rb_define_method(Consistent, "initialize", method_init, 0);
-  rb_define_method(Consistent, "add", method_add, 1);
   rb_define_method(Consistent, "get", method_get, 3);
+  rb_define_method(Consistent, "add", method_add, 1);
+  rb_define_method(Consistent, "update", method_update, 1);
   // rb_define_method(Consistent, "refresh", method_refresh, 0);
-}
-
-VALUE method_add(VALUE self, VALUE items) {
-  ConsistentHash_t *ring;
-  ring = get_Ring(self);
-  ConsistentHash_ServerList_t *list = ConsistentHash_ServerList_new(ring);
-  long items_size = RARRAY_LEN(items);
-  for(int i = 0; i < items_size; i++){
-    VALUE item = rb_ary_entry(items, i);
-    VALUE node = rb_hash_aref(item, rb_str_new2("node"));
-    char *name = RSTRING_PTR(node);
-    size_t name_len = RSTRING_LEN(node);
-    uint32_t weight = NUM2INT(rb_hash_aref(item, rb_str_new2("weight")));
-    uint32_t alive = NUM2INT(rb_hash_aref(item, rb_str_new2("status")));
-    ConsistentHash_ServerList_add(list, name, name_len, weight, alive, 0);
-  }
-  ConsistentHash_exchange_server_list(ring, list);
-  ConsistentHash_ServerList_free(list);
-  return Qnil;
 }
 
 VALUE method_get(VALUE self, VALUE token_r, VALUE cnt_r, VALUE all_r) {
@@ -104,4 +86,44 @@ VALUE method_get(VALUE self, VALUE token_r, VALUE cnt_r, VALUE all_r) {
   ConsistentHash_Iterator_free(iter);
 
   return nodes;
+}
+
+VALUE method_add(VALUE self, VALUE items) {
+  ConsistentHash_t *ring;
+  ring = get_Ring(self);
+  ConsistentHash_ServerList_t *list = ConsistentHash_ServerList_new(ring);
+  long items_size = RARRAY_LEN(items);
+  for(int i = 0; i < items_size; i++){
+    VALUE item = rb_ary_entry(items, i);
+    VALUE node = rb_hash_aref(item, rb_str_new2("node"));
+    char *name = RSTRING_PTR(node);
+    size_t name_len = RSTRING_LEN(node);
+    uint32_t weight = NUM2INT(rb_hash_aref(item, rb_str_new2("weight")));
+    uint32_t alive = NUM2INT(rb_hash_aref(item, rb_str_new2("status")));
+    ConsistentHash_ServerList_add(list, name, name_len, weight, alive, 0);
+  }
+  ConsistentHash_exchange_server_list(ring, list);
+  ConsistentHash_ServerList_free(list);
+  return Qnil;
+}
+
+
+VALUE method_update(VALUE self, VALUE items) {
+  ConsistentHash_t *ring = get_Ring(self);
+  ConsistentHash_AliveByName_t *list = ConsistentHash_AliveByName_new(ring);
+
+  long items_size = RARRAY_LEN(items);
+  for(int i = 0; i < items_size; i++){
+    VALUE item = rb_ary_entry(items, i);
+    VALUE node = rb_hash_aref(item, rb_str_new2("node"));
+    char *name = RSTRING_PTR(node);
+    size_t name_len = RSTRING_LEN(node);
+    VALUE alive = NUM2INT(rb_hash_aref(item, rb_str_new2("status")));
+
+    ConsistentHash_AliveByName_add(list, name, name_len, alive);
+  }
+  CH_aliveness_e default_alive = CH_DEFAULT;
+  ConsistentHash_refresh_alive_by_name(ring, list, default_alive);
+  ConsistentHash_AliveByName_free(list);
+  return Qnil;
 }

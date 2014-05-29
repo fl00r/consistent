@@ -34,7 +34,15 @@ ring.add node: 'server3.mydomain.cc', weight: 50
 ring.refresh!
 ```
 
-Or you can pass servers to constructor and ring will be refreshed explicitly
+Or you can add nodes with one kick
+
+```ruby
+ring.add! [{ node: 'server1.mydomain.cc' },
+           { node: 'server2.mydomain.cc', status: :dead },
+           { node: 'server3.mydomain.cc', weight: 50 }]
+```
+
+Or you can pass nodes to constructor and ring will be refreshed explicitly
 
 ```ruby
 ring = Consistent::Ring.new [{ node: 'server1.mydomain.cc' },
@@ -46,18 +54,20 @@ ring = Consistent::Ring.new [{ node: 'server1.mydomain.cc' },
 
 ```ruby
 ring.update node: 'server1.mydomain.cc', status: :dead
-ring.update node: 'server2.mydomain.cc', weight: 50, status: :alive
+ring.update node: 'server2.mydomain.cc', status: :dead
 ring.refresh!
 
 # Same as
 ring.update [{ node: 'server1.mydomain.cc', status: :dead }, 
-             { node: 'server2.mydomain.cc', weight: 50, status: :alive }]
+             { node: 'server2.mydomain.cc', status: :dead }]
 ring.refresh!
 
 # Or bang function that will refresh ring explicitly
 ring.update! [{ node: 'server1.mydomain.cc', status: :dead }, 
-              { node: 'server2.mydomain.cc', weight: 50, status: :alive }]
+              { node: 'server2.mydomain.cc', status: :dead }]
 ```
+
+Note, that you can't change weight while update. You can change only status. TO change weight you should replace old nodes with new ones.
 
 ### Replacing all nodes with new ones
 

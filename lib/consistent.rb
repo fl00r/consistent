@@ -71,6 +71,7 @@ class Consistent
 
     def refresh!
       @ring.add(@_add) && @_add.clear  if @_add.any?
+      @ring.update(@_update) && @_update.clear  if @_update.any?
       @ring.replace(@_replace) && @_replace.clear  if @_replace.any?
     end
 
@@ -85,7 +86,7 @@ class Consistent
     end
 
     def update_one(node)
-      @_add << prepare_update(node)
+      @_update << prepare_update(node)
     end
 
     def prepare_add(node)

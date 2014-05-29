@@ -22,6 +22,8 @@ describe Consistent::Ring do
   end
 
   describe "add" do
+    let(:ring){ Consistent::Ring.new }
+
     it "should not add nodes before refresh" do
       ring.add nodes[0]
       ring.add nodes[1]
@@ -66,6 +68,18 @@ describe Consistent::Ring do
   end
 
   describe "update" do
-    
+    it "should not update before refresh" do
+      ring.update node: "theverylast", status: :dead
+      ring.get("", :all).size.must_equal 2
+      ring.refresh!
+      ring.get("", :all).size.must_equal 1
+    end
+
+    it "should update! without refresh" do
+      ring.update! node: "theverylast", status: :dead
+      ring.get("", :all).size.must_equal 1
+      ring.update! node: "theverylast", status: :alive
+      ring.get("", :all).size.must_equal 2
+    end
   end
 end
