@@ -6,10 +6,10 @@ require 'consistent/version'
 Gem::Specification.new do |spec|
   spec.name          = "consistent"
   spec.version       = Consistent::VERSION
-  spec.authors       = ["Petr Yanovich"]
+  spec.authors       = ["Y. Sokolov", "Petr Yanovich"]
   spec.email         = ["fl00r@yandex.ru"]
-  spec.summary       = %q{consistent}
-  spec.description   = %q{consistent}
+  spec.summary       = %q{Consitent Hash Ruby wrapper}
+  spec.description   = %q{Consitent Hash Ruby wrapper}
   spec.homepage      = ""
   spec.license       = "MAIL.RU"
 

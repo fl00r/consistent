@@ -64,6 +64,15 @@ class Consistent
       end
     end
 
+    def replace(nodes)
+      nodes.each{ |n| replace_one(n) }
+    end
+
+    def replace!(nodes)
+      replace(nodes)
+      refresh!
+    end
+
     def update!(node)
       update(node)
       refresh!
@@ -72,11 +81,7 @@ class Consistent
     def refresh!
       @ring.add(@_add) && @_add.clear  if @_add.any?
       @ring.update(@_update) && @_update.clear  if @_update.any?
-      @ring.replace(@_replace) && @_replace.clear  if @_replace.any?
-    end
-
-    def replace!
-      
+      @ring.add(@_replace) && @_replace.clear  if @_replace.any?
     end
 
     private
@@ -89,6 +94,10 @@ class Consistent
       @_update << prepare_update(node)
     end
 
+    def replace_one(node)
+      @_replace << prepare_replace(node)
+    end
+
     def prepare_add(node)
       node[:status] ||= :alive
       prepare(node)
@@ -96,6 +105,13 @@ class Consistent
 
     def prepare_update(node)
       node[:status] ||= :default
+      node = prepare(node)
+      node.delete "weight"
+      node
+    end
+
+    def prepare_replace(node)
+      node[:status] ||= :alive
       prepare(node)
     end
 

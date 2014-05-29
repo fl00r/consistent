@@ -4,6 +4,9 @@ describe Consistent::Ring do
   let(:nodes){ [ { node: "second", weight: 100, status: :alive },
                  { node: "theverylast", weight: 100, status: :alive },
                  { node: "dead", weight: 100, status: :dead } ] }
+  let(:new_nodes){ [ { node: "a1", weight: 100, status: :alive },
+                     { node: "a2", weight: 100, status: :alive },
+                     { node: "a3", weight: 100, status: :alive } ] }
   let(:alive_nodes){ nodes.select{ |n| n[:status] == :alive }}
   let(:ring){ Consistent::Ring.new nodes }
 
@@ -80,6 +83,23 @@ describe Consistent::Ring do
       ring.get("", :all).size.must_equal 1
       ring.update! node: "theverylast", status: :alive
       ring.get("", :all).size.must_equal 2
+      ring.update! node: "theverylast", status: :dead
+      ring.update! node: "second", status: :dead
+      ring.get("", :all).size.must_equal 0
+    end
+  end
+
+  describe "replace" do
+    it "should not replace before refresh" do
+      ring.replace(new_nodes)
+      ring.get("", :all).sort.must_equal alive_nodes.map{ |n| n[:node] }.sort
+      ring.refresh!
+      ring.get("", :all).sort.must_equal new_nodes.map{ |n| n[:node] }.sort
+    end
+
+    it "should replace! without refresh" do
+      ring.replace!(new_nodes)
+      ring.get("", :all).sort.must_equal new_nodes.map{ |n| n[:node] }.sort
     end
   end
 end

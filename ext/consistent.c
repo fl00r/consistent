@@ -53,7 +53,7 @@ void Init_consistent_ring() {
   rb_define_method(Consistent, "get", method_get, 3);
   rb_define_method(Consistent, "add", method_add, 1);
   rb_define_method(Consistent, "update", method_update, 1);
-  // rb_define_method(Consistent, "refresh", method_refresh, 0);
+  // rb_define_method(Consistent, "replace", method_replace, 1);
 }
 
 VALUE method_get(VALUE self, VALUE token_r, VALUE cnt_r, VALUE all_r) {
