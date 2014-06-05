@@ -67,8 +67,8 @@ ring.update! [{ node: 'server1.mydomain.cc', status: :dead },
               { node: 'server2.mydomain.cc', status: :dead }]
 ```
 
-*Note*, 
-that you can't change weight while update. You can change only status. To change weight you should replace old nodes with new ones.
+#### Note, 
+you can't change weight while update. You can change only status. To change weight you should replace old nodes with new ones.
 
 ### Replacing all nodes with new ones
 
