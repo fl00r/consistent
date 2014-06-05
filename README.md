@@ -1,6 +1,6 @@
 # Consistent
 
-Consistent hash ((c) Yura Sokolov aka funny_fulcon) Ruby wrapper
+Consistent Hash ((c) Yura Sokolov aka funny_fulcon) Ruby wrapper
 
 ## Installation
 
