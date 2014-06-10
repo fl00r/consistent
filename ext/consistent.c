@@ -61,11 +61,12 @@ VALUE method_get(VALUE self, VALUE token_r, VALUE cnt_r, VALUE all_r) {
   ring = get_Ring(self);
   char *token = RSTRING_PTR(token_r);
   int token_len = RSTRING_LEN(token_r);
+  int i;
   VALUE nodes = rb_ary_new();
   ConsistentHash_Iterator_t *iter = ConsistentHash_Iterator_new(ring, token, token_len);
   if(all_r == Qnil){
     int cnt = NUM2INT(cnt_r);
-    for(int i = 0; i < cnt; i++) {
+    for(i = 0; i < cnt; i++) {
       ConsistentHash_IteratorName_t res = ConsistentHash_Iterator_next_name(iter);
       if(res.name != NULL) {
         rb_ary_push(nodes, rb_str_new2(res.name));
@@ -74,7 +75,7 @@ VALUE method_get(VALUE self, VALUE token_r, VALUE cnt_r, VALUE all_r) {
       }
     }
   }else{
-    for(int i = 0; ; i++) {
+    for(i = 0; ; i++) {
       ConsistentHash_IteratorName_t res = ConsistentHash_Iterator_next_name(iter);
       if(res.name != NULL) {
         rb_ary_push(nodes, rb_str_new2(res.name));
@@ -93,13 +94,18 @@ VALUE method_add(VALUE self, VALUE items) {
   ring = get_Ring(self);
   ConsistentHash_ServerList_t *list = ConsistentHash_ServerList_new(ring);
   long items_size = RARRAY_LEN(items);
-  for(int i = 0; i < items_size; i++){
+  VALUE node_str = rb_str_new2("node");
+  VALUE weight_str = rb_str_new2("weight");
+  VALUE status_str = rb_str_new2("status");
+  int i;
+
+  for(i = 0; i < items_size; i++){
     VALUE item = rb_ary_entry(items, i);
-    VALUE node = rb_hash_aref(item, rb_str_new2("node"));
+    VALUE node = rb_hash_aref(item, node_str);
     char *name = RSTRING_PTR(node);
     size_t name_len = RSTRING_LEN(node);
-    uint32_t weight = NUM2INT(rb_hash_aref(item, rb_str_new2("weight")));
-    uint32_t alive = NUM2INT(rb_hash_aref(item, rb_str_new2("status")));
+    uint32_t weight = NUM2INT(rb_hash_aref(item, weight_str));
+    uint32_t alive = NUM2INT(rb_hash_aref(item, status_str));
     ConsistentHash_ServerList_add(list, name, name_len, weight, alive, 0);
   }
   ConsistentHash_exchange_server_list(ring, list);
@@ -113,12 +119,16 @@ VALUE method_update(VALUE self, VALUE items) {
   ConsistentHash_AliveByName_t *list = ConsistentHash_AliveByName_new(ring);
 
   long items_size = RARRAY_LEN(items);
-  for(int i = 0; i < items_size; i++){
+  VALUE node_str = rb_str_new2("node");
+  VALUE status_str = rb_str_new2("status");
+  int  i;
+  
+  for(i = 0; i < items_size; i++){
     VALUE item = rb_ary_entry(items, i);
-    VALUE node = rb_hash_aref(item, rb_str_new2("node"));
+    VALUE node = rb_hash_aref(item, node_str);
     char *name = RSTRING_PTR(node);
     size_t name_len = RSTRING_LEN(node);
-    VALUE alive = NUM2INT(rb_hash_aref(item, rb_str_new2("status")));
+    VALUE alive = NUM2INT(rb_hash_aref(item, status_str));
 
     ConsistentHash_AliveByName_add(list, name, name_len, alive);
   }
