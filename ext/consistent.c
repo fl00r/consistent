@@ -39,7 +39,7 @@ ConsistentHash_t* get_Ring(VALUE self) {
   return ring;
 }
 
-VALUE wrap_Ring(VALUE klass) {
+void wrap_Ring(VALUE klass) {
   ConsistentHash_t* ring = ConsistentHash_new(config);
   Data_Wrap_Struct(klass, NULL, ConsistentHash_free, ring);
 }
@@ -122,7 +122,7 @@ VALUE method_update(VALUE self, VALUE items) {
   VALUE node_str = rb_str_new2("node");
   VALUE status_str = rb_str_new2("status");
   int  i;
-  
+
   for(i = 0; i < items_size; i++){
     VALUE item = rb_ary_entry(items, i);
     VALUE node = rb_hash_aref(item, node_str);
